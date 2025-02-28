@@ -11,8 +11,10 @@ import javax.servlet.RequestDispatcher;
 @WebServlet("/LoginServlet")
 public class LoginServlet extends HttpServlet {
     private static final String USERNAME = "Admin";
-    private static final String PASSWORD = "12345";
-    private static final String NAME_PATTERN = "^[A-Z][a-zA-Z]{2,}$"; // Starts with a capital letter, min 3 chars
+    private static final String PASSWORD = "Admin@123";  // Must follow validation rules
+
+    private static final String NAME_PATTERN = "^[A-Z][a-zA-Z]{2,}$"; // Name starts with capital & min 3 chars
+    private static final String PASSWORD_PATTERN = "^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*()_+=|<>?{}\\[\\]-]).{8,}$";
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -23,6 +25,7 @@ public class LoginServlet extends HttpServlet {
         response.setContentType("text/html");
         PrintWriter out = response.getWriter();
 
+        // Validate Name
         if (!Pattern.matches(NAME_PATTERN, user)) {
             out.println("<font color=red>Invalid name! Name must start with a capital letter and be at least 3 characters long.</font>");
             RequestDispatcher rd = request.getRequestDispatcher("login.html");
@@ -30,6 +33,19 @@ public class LoginServlet extends HttpServlet {
             return;
         }
 
+        // Validate Password
+        if (!Pattern.matches(PASSWORD_PATTERN, pwd)) {
+            out.println("<font color=red>Invalid password! Password must have:</font><br>");
+            out.println("<font color=red>- Minimum 8 characters</font><br>");
+            out.println("<font color=red>- At least 1 uppercase letter</font><br>");
+            out.println("<font color=red>- At least 1 numeric digit</font><br>");
+            out.println("<font color=red>- Exactly 1 special character</font><br>");
+            RequestDispatcher rd = request.getRequestDispatcher("login.html");
+            rd.include(request, response);
+            return;
+        }
+
+        // Check credentials
         if (USERNAME.equals(user) && PASSWORD.equals(pwd)) {
             request.setAttribute("user", user);
             request.getRequestDispatcher("welcome.jsp").forward(request, response);
